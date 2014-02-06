@@ -24,11 +24,6 @@ public class Page : MonoBehaviour
 		Deactivate();
 	}
 
-	void Start ()
-	{
-		transform.localPosition = Vector3.up * hideDepth;
-	}
-
 	void Activate()
 	{
 		childrenDeactivated = false;
