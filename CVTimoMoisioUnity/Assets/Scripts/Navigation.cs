@@ -10,11 +10,16 @@ namespace TimoMoisio.CV
 
 		public NavigationItem[] items;
 
+		private FeatheredRotation buttonsAnimation;
+
 		void Start()
 		{
 			current = items[0];
 
 			current.NavigateTo();
+
+			Transform[] transforms = items.Select(t => t.button.transform).ToArray();
+			buttonsAnimation = new FeatheredRotation(transforms);
 		}
 
 		void OnEnable()
