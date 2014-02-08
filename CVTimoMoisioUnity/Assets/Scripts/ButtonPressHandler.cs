@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace TimoMoisio.CV
 {
-	public class GUIManager : MonoBehaviour
+	public class ButtonPressHandler : MonoBehaviour
 	{
 		public Camera guiCamera;
 
