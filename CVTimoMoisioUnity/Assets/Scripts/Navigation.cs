@@ -20,6 +20,19 @@ namespace TimoMoisio.CV
 
 			Transform[] transforms = items.Select(t => t.button.transform).ToArray();
 			buttonsAnimation = new FeatheredRotation(transforms);
+
+			HideButtons();
+			Invoke("ShowButtons", 1);
+		}
+
+		void ShowButtons()
+		{
+			buttonsAnimation.RotateTo(Vector3.zero, 100, 0.25f);
+		}
+
+		void HideButtons()
+		{
+			buttonsAnimation.SetTo(Vector3.up * 90);
 		}
 
 		void OnEnable()
@@ -36,6 +49,11 @@ namespace TimoMoisio.CV
 			{
 				items[i].button.OnButtonPress -= OnButtonPress;
 			}
+		}
+
+		void Update()
+		{
+			buttonsAnimation.UpdatePositions(Time.deltaTime);
 		}
 
 		void OnButtonPress(Button button)

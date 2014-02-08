@@ -29,13 +29,11 @@ namespace TimoMoisio.CV
 				if (Input.GetMouseButtonDown(0))
 				{
 					hitObject = currentHitObject;
-					Debug.Log("down " + hitObject.name);
 				}
 				else if (Input.GetMouseButtonUp(0))
 				{
 					if (hitObject != null && currentHitObject == hitObject)
 					{
-						Debug.Log("up " + hitObject.name);
 						Button button = hitObject.GetComponent<Button>();
 
 						if (button != null) button.Press();
