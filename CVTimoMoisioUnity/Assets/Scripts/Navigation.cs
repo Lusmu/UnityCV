@@ -1,65 +1,123 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TimoMoisio.CV
 {
+	// TODO make navi items monobehaviours
 	public class Navigation : MonoBehaviour 
 	{
+		public enum NaviId
+		{
+			None = 0,
+			Main = 1,
+			Samples = 2,
+		}
+
 		private NavigationItem current;
 
-		public NavigationItem[] items;
+		public NavigationItem[] mainItems;
+		public NavigationItem[] samplesItems;
 
-		private FeatheredRotation buttonsAnimation;
+		private NaviId currentNavi;
+		private FeatheredRotation mainButtonsAnimation;
+		private FeatheredRotation samplesButtonsAnimation;
+		List<NavigationItem> all;
 
 		void Start()
 		{
-			current = items[0];
+			current = mainItems[0];
 
 			current.NavigateTo();
 
-			Transform[] transforms = items.Select(t => t.button.transform).ToArray();
-			buttonsAnimation = new FeatheredRotation(transforms);
+			Transform[] transforms = mainItems.Select(t => t.button.transform).ToArray();
+			mainButtonsAnimation = new FeatheredRotation(transforms);
 
-			HideButtons();
-			Invoke("ShowButtons", 1);
+			Transform[] transforms2 = samplesItems.Select(t => t.button.transform).ToArray();
+			samplesButtonsAnimation = new FeatheredRotation(transforms2);
+
+			currentNavi = NaviId.Main;
+
+			HideButtons(NaviId.Main);
+			HideButtons(NaviId.Samples);
+
+			all = new List<NavigationItem>(mainItems);
+			all.AddRange(samplesItems);
+
+			StartCoroutine(ShowButtons(currentNavi, 1));
 		}
 
-		void ShowButtons()
+		IEnumerator ShowButtons(NaviId navi, float delay)
 		{
-			buttonsAnimation.RotateTo(Vector3.zero, 100, 0.25f);
+			yield return new WaitForSeconds(delay);
+			GetNaviAnimation(navi).RotateTo(Vector3.zero, 100, 0.25f);
 		}
 
-		void HideButtons()
+		void HideButtons(NaviId navi)
 		{
-			buttonsAnimation.SetTo(Vector3.up * 90);
+			GetNaviAnimation(navi).SetTo(Vector3.up * 90);
+		}
+
+		void SwitchNavi(NaviId newNavi)
+		{
+			if (newNavi != currentNavi)
+			{
+				HideButtons(currentNavi);
+
+				currentNavi = newNavi;
+
+				StartCoroutine(ShowButtons(currentNavi, 0.5f));
+			}
+		}
+
+		FeatheredRotation GetNaviAnimation(NaviId navi)
+		{
+			switch (navi)
+			{
+			case NaviId.Samples:
+				return samplesButtonsAnimation;
+			case NaviId.Main:
+				return mainButtonsAnimation;
+			}
+
+			return null;
 		}
 
 		void OnEnable()
 		{
-			for (int i = 0; i < items.Length; i++)
+			for (int i = 0; i < mainItems.Length; i++)
 			{
-				items[i].button.OnButtonPress += OnButtonPress;
+				mainItems[i].button.OnButtonPress += OnButtonPress;
+			}
+			for (int i = 0; i < samplesItems.Length; i++)
+			{
+				samplesItems[i].button.OnButtonPress += OnButtonPress;
 			}
 		}
 
 		void OnDisable()
 		{
-			for (int i = 0; i < items.Length; i++)
+			for (int i = 0; i < mainItems.Length; i++)
 			{
-				items[i].button.OnButtonPress -= OnButtonPress;
+				mainItems[i].button.OnButtonPress -= OnButtonPress;
+			}
+			for (int i = 0; i < samplesItems.Length; i++)
+			{
+				samplesItems[i].button.OnButtonPress -= OnButtonPress;
 			}
 		}
 
 		void Update()
 		{
-			buttonsAnimation.UpdatePositions(Time.deltaTime);
+			GetNaviAnimation(currentNavi).UpdatePositions(Time.deltaTime);
 		}
 
 		void OnButtonPress(Button button)
 		{
 			NaviButton naviButton = (NaviButton)button;
-			NavigationItem item = items.FirstOrDefault(i => i.button == naviButton);
+			NavigationItem item = all.FirstOrDefault(i => i.button == naviButton);
+
 			if (item != null && item != current)
 			{
 				current.NavigateFrom();
@@ -67,12 +125,18 @@ namespace TimoMoisio.CV
 				current = item;
 
 				current.NavigateTo();
+
+				if (current.changeToNavi != NaviId.None)
+				{
+					SwitchNavi(current.changeToNavi);
+				}
 			}
 		}
 
 		[System.Serializable]
 		public class NavigationItem
 		{
+			public NaviId changeToNavi;
 			public NaviButton button;
 			public Transform cameraPosition;
 			public Page targetPage;
