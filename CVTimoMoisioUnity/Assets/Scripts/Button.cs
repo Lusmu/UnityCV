@@ -9,7 +9,6 @@ namespace TimoMoisio.CV
 
 		public virtual void Press()
 		{
-			Debug.Log(gameObject.name + " pressed");
 			if (OnButtonPress != null) OnButtonPress(this);
 		}
 	}
